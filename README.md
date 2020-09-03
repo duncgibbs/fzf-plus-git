@@ -1,2 +1,2 @@
 # fzf-plus-git
-A better interactive Git using FZF and Rust
+A better interactive Git using FZF
