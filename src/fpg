@@ -35,5 +35,14 @@ function stage {
 }
 
 if [[ "$1" = 'stage' ]]; then
-    stage
+    re='^[0-9]+$'
+    if [[ $2 =~ $re ]]; then
+        for i in $(seq 1 $2)
+        do
+            echo $i
+            stage
+        done
+    else
+        stage
+    fi
 fi
