@@ -1,0 +1,39 @@
+#!/bin/bash
+
+function stage {
+    addedFiles=()
+
+    while :
+    do
+        trackedFiles=$(git status -uno | grep '^\t' | sed -E 's/^[[:blank:]]*//g')
+        untrackedFiles=$(git ls-files -o --exclude-standard | sed 's/^/untracked:  /g')
+        gitFiles=$(echo -e "${trackedFiles}\n${untrackedFiles}")
+
+        fzfResult=$(echo "$gitFiles" | fzf \
+        -m \
+        --ansi \
+        --preview="echo {} | sed -E 's/^.+:[[:blank:]]//g' | xargs git diff --color=always HEAD --" \
+        --header-lines $(git diff --staged --name-only | wc -l))
+        if [[ "$fzfResult" = "" ]]; then
+            break
+        else
+            file=$(echo $fzfResult | sed -E 's/^.+:[[:blank:]]//g')
+            git add $file
+            addedFiles+=($file)
+        fi
+    done
+
+    if [[ "$addedFiles" != "" ]]; then
+        echo "Files being committed:"
+        printf "\t%s\n"  "${addedFiles[@]}"
+        echo ""
+
+        read -p 'Commit message: ' commitMessage
+
+        git commit -m "$commitMessage"
+    fi
+}
+
+if [[ "$1" = 'stage' ]]; then
+    stage
+fi
