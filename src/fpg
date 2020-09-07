@@ -5,7 +5,7 @@ function stage {
 
     while :
     do
-        trackedFiles=$(git status -uno | grep '^\t' | sed -E 's/^[[:blank:]]*//g')
+        trackedFiles=$(git status -uno | grep -P '^\t' | sed -E 's/^[[:blank:]]*//g')
         untrackedFiles=$(git ls-files -o --exclude-standard | sed 's/^/untracked:  /g')
         gitFiles=$(echo -e "${trackedFiles}\n${untrackedFiles}")
 
