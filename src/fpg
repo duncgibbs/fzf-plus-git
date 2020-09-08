@@ -28,7 +28,7 @@ function stage {
         printf "\t%s\n"  "${addedFiles[@]}"
         echo ""
 
-        read -p 'Commit message: ' commitMessage
+        read -e -p 'Commit message: ' commitMessage
 
         git commit -m "$commitMessage"
     fi
