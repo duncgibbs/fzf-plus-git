@@ -34,7 +34,19 @@ function stage {
     fi
 }
 
-if [[ "$1" = 'stage' ]]; then
+function hist {
+    if [[ $1 == '--short' ]] || [[ $1 == '-s' ]]; then
+        previewString="git diff --color=always --name-only {}~ {}"
+    else
+        previewString="git diff --color=always {}~ {}"
+    fi
+
+    git log --pretty=format:"%H" | fzf \
+        --ansi \
+        --preview="$previewString"
+}
+
+if [[ $1 == 'stage' ]]; then
     re='^[0-9]+$'
     if [[ $2 =~ $re ]]; then
         for i in $(seq 1 $2)
@@ -45,4 +57,6 @@ if [[ "$1" = 'stage' ]]; then
     else
         stage
     fi
+elif [[ $1 == 'hist' ]] || [[ $1 == 'history' ]]; then
+    hist $2
 fi
