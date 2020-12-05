@@ -1,5 +1,7 @@
 #!/bin/bash
 
+. fpg_notes
+
 function stage {
     addedFiles=()
 
@@ -59,4 +61,6 @@ if [[ $1 == 'stage' ]]; then
     fi
 elif [[ $1 == 'hist' ]] || [[ $1 == 'history' ]]; then
     hist $2
+elif [[ $1 == 'notes' ]]; then
+    notes $2
 fi
