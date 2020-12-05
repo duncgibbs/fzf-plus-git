@@ -1,0 +1,74 @@
+#!/bin/bash
+
+
+
+function notes {
+    if [[ -d .fpg ]]; then
+        if [[ -f .fpg/config.json ]]; then
+            if command -v jq >/dev/null 2>&1 ; then
+                if [[ $1 == 'sync' ]]; then
+                    sync
+                elif [[ $1 == 'save' ]]; then
+                    sync 'quiet'
+                    save
+                fi
+            else
+                echo "jq must be installed."
+            fi
+        else
+            echo "No config file found."
+        fi
+    else
+        echo "No .fpg directory found."
+    fi
+}
+
+function sync {
+    if [[ $1 == 'quiet' ]]; then
+        quiet=true
+    else
+        quiet=false
+    fi
+
+    for repo in $(jq -r '.notes.repos | keys | .[]' .fpg/config.json)
+    do
+        if [[ $repo == 'default' ]]; then
+            defaultRepo=$(jq -r '.notes.repos.default' .fpg/config.json)
+            cp -a * ".fpg/repos/$defaultRepo"
+            ! $quiet && echo "Changes in default ($defaultRepo):"
+            ! $quiet && (cd ".fpg/repos/$defaultRepo" && git status -s)
+        else
+            while read -r file
+            do
+                cp -a "$file" ".fpg/repos/$repo"
+            done <<< "$(jq -r '.notes.repos."obsidian-notes" | .[]' .fpg/config.json)"
+
+            ! $quiet && echo "Changes in $repo:"
+            ! $quiet && (cd ".fpg/repos/$repo" && git status -s)
+        fi
+        ! $quiet && echo
+    done
+
+    ! $quiet && echo "Synced."
+}
+
+function save {
+    for repo in $(jq -r '.notes.repos | keys | .[]' .fpg/config.json)
+    do
+        if [[ $repo == 'default' ]]; then
+            defaultRepo=$(jq -r '.notes.repos.default' .fpg/config.json)
+            (cd ".fpg/repos/$defaultRepo" &&
+            git add -A &&
+            git commit -m "$(date +"%d.%m.%y %H:%M:%S")" &&
+            git push)
+        else
+            (cd ".fpg/repos/$repo" &&
+            git add -A &&
+            git commit -m "$(date +"%d.%m.%y %H:%M:%S")" &&
+            git push)
+        fi
+        echo
+    done
+
+    echo "Saved."
+}
